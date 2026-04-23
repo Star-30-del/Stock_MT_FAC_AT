@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Withdraw Modal</title>
+<title>Withdraw Modal — MT.FAC.AT</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,7 +28,6 @@
     background: var(--bg); 
     color: var(--text); 
     min-height: 100vh;
-    /* BG Pattern for aesthetics */
     background-image:
       linear-gradient(rgba(75,158,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(75,158,255,0.03) 1px, transparent 1px);
@@ -36,7 +35,7 @@
   }
 
   /* ──────────────────────────────────────
-     MODAL STYLES
+      MODAL STYLES
   ─────────────────────────────────────── */
   .overlay {
     position: fixed; inset: 0; z-index: 800;
@@ -73,13 +72,11 @@
   .m-input:focus { border-color: var(--blue); }
   .m-input::placeholder { color: var(--muted); }
   
-  /* ทำให้ไอคอนปฏิทินในช่องวันที่เป็นสีขาว */
   .m-input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1) opacity(0.6);
     cursor: pointer;
   }
 
-  /* Month Selector Grid */
   .month-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 6px;
   }
@@ -96,7 +93,6 @@
     color: var(--blue); 
   }
 
-  /* Buttons */
   .m-row  { display: flex; gap: 12px; margin-top: 24px; }
   .btn-cancel {
     flex: 1; padding: 12px; border-radius: 11px;
@@ -124,7 +120,7 @@
 
     <div class="m-field">
       <label class="m-label">ชื่อผู้เบิก</label>
-      <input class="m-input" id="w-by" placeholder="T">
+      <input class="m-input" id="w-by" placeholder="พิมพ์ชื่อผู้เบิก...">
     </div>
 
     <div class="m-field">
@@ -134,8 +130,7 @@
 
     <div class="m-field">
       <label class="m-label">เดือนที่ลงบันทึก</label>
-      <div class="month-grid" id="month-grid">
-        </div>
+      <div class="month-grid" id="month-grid"></div>
     </div>
 
     <div class="m-field">
@@ -154,26 +149,29 @@
     </div>
 
     <div class="m-row">
-      <button class="btn-cancel" onclick="alert('ปิดหน้าต่าง')">ยกเลิก</button>
-      <button class="btn-confirm" onclick="alert('ยืนยันการเบิก!')">✅ ยืนยันเบิก</button>
+      <button class="btn-cancel" onclick="resetForm()">ยกเลิก</button>
+      <button class="btn-confirm" id="btn-submit">✅ ยืนยันเบิก</button>
     </div>
   </div>
 </div>
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMvbGs-K3rHfXWCayuztomS6zUV0QeSyPjSItvWZKsqY9bYrbEQKqdfZ36Pv3za5Fm/exec';
-
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMvbGs-K3rHfXWCayuztomS6zUV0QeSyPjSItvWZKsqY9bYrbEQKqdfZ36Pv3za5Fm/exec';
   const MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   let selectedMonth = new Date().getMonth();
 
   // 1. สร้างปุ่มเดือนและเซ็ตวันที่เริ่มต้น
   window.onload = function() {
+    buildMonthGrid();
+    document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
+  };
+
+  function buildMonthGrid() {
     const grid = document.getElementById('month-grid');
     grid.innerHTML = MONTH_SHORT.map((m, i) =>
       `<button class="month-btn ${i === selectedMonth ? ' act' : ''}" onclick="selectMonth(${i})">${m}</button>`
     ).join('');
-    
-    document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
-  };
+  }
 
   // 2. ฟังก์ชันเลือกเดือน
   function selectMonth(m) {
@@ -183,54 +181,60 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMvbGs-K3rHfXWCayuztom
     });
   }
 
+  function resetForm() {
+    if(confirm('ต้องการล้างข้อมูลที่กรอกไว้หรือไม่?')) {
+      document.getElementById('w-by').value = '';
+      document.getElementById('w-id').value = '';
+      document.getElementById('w-qty').value = '';
+      document.getElementById('w-reason').value = '';
+    }
+  }
+
   // 3. ฟังก์ชันส่งข้อมูลไปยัง Google Sheets
   function submitWithdraw() {
     const byVal = document.getElementById('w-by').value.trim();
     const dateVal = document.getElementById('w-date').value;
     const idVal = document.getElementById('w-id').value.trim();
-    const qtyVal = parseInt(document.getElementById('w-qty').value);
+    const qtyVal = document.getElementById('w-qty').value;
     const reasonVal = document.getElementById('w-reason').value.trim();
 
-    // เช็คว่ากรอกข้อมูลครบไหม
-    if (!byVal || !dateVal || !idVal || !qtyVal || !reasonVal) {
-      alert('⚠️ กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (!byVal || !dateVal || !idVal || !qtyVal || qtyVal <= 0 || !reasonVal) {
+      alert('⚠️ กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
       return;
     }
 
-    // เปลี่ยนข้อความปุ่มเพื่อบอกผู้ใช้ว่ากำลังโหลด
-    const btn = document.querySelector('.btn-confirm');
+    const btn = document.getElementById('btn-submit');
     const originalText = btn.innerHTML;
     btn.innerHTML = '⏳ กำลังบันทึก...';
     btn.disabled = true;
 
-    // แปลงวันที่ให้อ่านง่าย
     const d = new Date(dateVal);
     const dateFormatted = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`;
 
-    // เตรียมแพ็กเกจข้อมูลส่งไปหลังบ้าน
     const logEntry = {
       date: dateFormatted,
       by: byVal,
       id: idVal,
-      name: 'ไม่ระบุชื่อ', // ในระบบจริงควรดึงจากชื่ออะไหล่
+      name: 'รายการเบิกจ่าย', 
       monthName: MONTH_SHORT[selectedMonth] + ' ' + (new Date().getFullYear() + 543),
-      qty: qtyVal,
+      qty: parseInt(qtyVal),
       reason: reasonVal
     };
 
-    // ส่งข้อมูลไปที่ URL ของคุณผ่าน Fetch API
+    // ส่งข้อมูลแบบ POST
     fetch(GAS_URL, {
       method: 'POST',
+      mode: 'no-cors', // ใช้ no-cors หากไม่ต้องการอ่าน Response หรือแก้ปัญหา CORS เบื้องต้น
+      cache: 'no-cache',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         action: 'saveData', 
-        updates: [], // ใส่ updates คอลัมน์ถ้ามี
+        updates: [], 
         logs: [logEntry] 
       })
     })
-    .then(response => response.json())
-    .then(data => {
-      alert('✅ บันทึกข้อมูลสำเร็จ (ส่งเข้า Google Sheets แล้ว)');
-      // ล้างข้อมูลในฟอร์มหลังบันทึกเสร็จ
+    .then(() => {
+      alert('✅ บันทึกข้อมูลสำเร็จ (ข้อมูลถูกส่งไปยังระบบแล้ว)');
       document.getElementById('w-id').value = '';
       document.getElementById('w-qty').value = '';
       document.getElementById('w-reason').value = '';
@@ -239,11 +243,14 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMvbGs-K3rHfXWCayuztom
       alert('❌ เกิดข้อผิดพลาด: ' + error.message);
     })
     .finally(() => {
-      // คืนค่าปุ่มกลับมาเหมือนเดิม
       btn.innerHTML = originalText;
       btn.disabled = false;
     });
   }
 
-  // ผูกปุ่มยืนยันเข้ากับฟังก์ชัน submitWithdraw
-  document.querySelector('.btn-confirm').onclick = submitWithdraw;
+  // ผูกอีเวนต์คลิก
+  document.getElementById('btn-submit').addEventListener('click', submitWithdraw);
+</script>
+
+</body>
+</html>
