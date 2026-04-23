@@ -404,7 +404,6 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
 <div id="prog"></div>
 <div id="notif"></div>
 
-<!-- ══════════════ LOGIN ══════════════ -->
 <div id="screen-login">
   <div class="login-card">
     <div class="login-head">
@@ -436,16 +435,13 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
       <button class="np-btn del" onclick="npDel()">⌫</button>
     </div>
     <div class="np-hint">แตะตัวเลข หรือใช้แป้นพิมพ์</div>
-    <!-- hidden for keyboard -->
     <input id="kb-pin" type="password" inputmode="numeric" maxlength="4"
-      style="opacity:0;position:absolute;width:1px;height:1px;pointer-events:none">
+      style="position:absolute; left:-9999px; opacity:0;">
   </div>
 </div>
 
-<!-- ══════════════ APP ══════════════ -->
 <div id="screen-app">
 
-  <!-- HEADER -->
   <div id="app-header">
     <div class="header-inner">
       <span class="h-logo">📦</span>
@@ -470,13 +466,10 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
 
-    <!-- STATS -->
     <div class="stats" id="stats-grid"></div>
 
-    <!-- ═══ STOCK TAB ═══ -->
     <div id="tab-stock-content">
       <div class="filters">
         <input class="f-search" id="srch" placeholder="🔍 ค้นหารหัส หรือชื่ออะไหล่..." oninput="renderStock()">
@@ -512,7 +505,6 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
       </div>
     </div>
 
-    <!-- ═══ ORDER TAB ═══ -->
     <div id="tab-order-content" style="display:none">
       <div class="order-head">
         <div class="order-title">รายการที่ต้องสั่งเพิ่ม</div>
@@ -536,18 +528,13 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
       </div>
     </div>
 
-    <!-- ═══ LOG TAB ═══ -->
     <div id="tab-log-content" style="display:none">
       <div class="tbl-wrap">
         <div id="log-list"></div>
       </div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /screen-app -->
-
-<!-- ══════════════ MODAL: เบิกออก ══════════════ -->
-<div class="overlay" id="modal-withdraw" onclick="if(event.target===this)closeWithdraw()">
+  </div></div><div class="overlay" id="modal-withdraw" onclick="if(event.target===this)closeWithdraw()">
   <div class="modal">
     <h3>📤 บันทึกการเบิกออก</h3>
 
@@ -674,13 +661,15 @@ async function loadData() {
   setSync('spin', 'กำลังโหลด...');
   setProgress(20);
   try {
-    if (typeof google !== 'undefined' && google.script) {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
       google.script.run
         .withSuccessHandler(onData)
         .withFailureHandler(() => { setSync('fail','โหลดไม่สำเร็จ'); showNotif('❌ โหลดข้อมูลล้มเหลว','var(--red)'); })
         .getAppData();
     } else {
-      const res = await fetch(GAS_URL);
+      // ใช้วิธีดึงผ่าน Fetch API เมื่อรันอยู่ข้างนอก Google Apps Script
+      const res = await fetch(GAS_URL + '?action=getAppData');
+      if (!res.ok) throw new Error('เครือข่ายมีปัญหา');
       const d   = await res.json();
       onData(d);
     }
@@ -972,12 +961,6 @@ async function submitWithdraw() {
   const stock = getStock(p, selectedMonth);
   if (qtyVal > stock) { showNotif(`❌ สต็อกไม่พอ (เหลือ ${stock} ${p.unit})`,'var(--red)'); return; }
 
-  // คำนวณ column
-  // โครงสร้าง sheet: col A=id(1), B=type(2), C=name(3), D=supplier(4), E=price(5), F=unit(6),
-  //   G=image(7), H=opening(8), I=minStock(9)
-  //   จากนั้นแต่ละเดือน 3 คอล: IN, OUT, BAL
-  //   เดือน 0: col J(10),K(11),L(12) → 1-based: 10,11,12
-  //   เดือน m: col = 10+(m*3), 11+(m*3), 12+(m*3)
   const colOut = 11 + (selectedMonth * 3); // 1-based OUT
   const colBal = 12 + (selectedMonth * 3); // 1-based BAL
 
@@ -1027,7 +1010,7 @@ async function submitWithdraw() {
     btn.disabled = false; btn.textContent = '✅ ยืนยันเบิก';
   };
 
-  if (typeof google !== 'undefined' && google.script) {
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
       .withSuccessHandler(onSuccess)
       .withFailureHandler(e => {
@@ -1036,7 +1019,17 @@ async function submitWithdraw() {
       })
       .saveData(updates, [logEntry]);
   } else {
-    setTimeout(() => onSuccess({ ok: true }), 900);
+    // ใช้วิธี POST ผ่าน Fetch API เมื่อรันอยู่ข้างนอก Google Apps Script
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveData', updates: updates, logs: [logEntry] })
+    })
+    .then(r => r.json())
+    .then(onSuccess)
+    .catch(e => {
+      showNotif('❌ '+e.message,'var(--red)');
+      isSaving=false; btn.disabled=false; btn.textContent='✅ ยืนยันเบิก';
+    });
   }
 }
 
@@ -1053,15 +1046,25 @@ function openEditMin(id) {
   const old = p.minStock;
   p.minStock = n;
   updateAll();
-  // col I = 9 (1-based)
+  
   const upd = [{ row: p.rowIdx, col: 9, val: n }];
-  if (typeof google !== 'undefined' && google.script) {
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
       .withSuccessHandler(r => showNotif(r&&r.ok===false?'❌ '+(r.msg||'ล้มเหลว'):'✅ อัปเดต Min Stock แล้ว','var(--green)'))
       .withFailureHandler(() => { p.minStock=old; updateAll(); })
       .saveData(upd, []);
   } else {
-    showNotif('✅ อัปเดต Min Stock แล้ว (mock)','var(--green)');
+    // ใช้วิธี POST ผ่าน Fetch API เมื่อรันอยู่ข้างนอก Google Apps Script
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveData', updates: upd, logs: [] })
+    })
+    .then(r => r.json())
+    .then(r => showNotif(r&&r.ok===false?'❌ '+(r.msg||'ล้มเหลว'):'✅ อัปเดต Min Stock แล้ว','var(--green)'))
+    .catch(e => {
+      p.minStock=old; updateAll();
+      showNotif('❌ ล้มเหลว: ' + e.message, 'var(--red)');
+    });
   }
 }
 
