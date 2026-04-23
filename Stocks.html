@@ -1,523 +1,130 @@
 <!DOCTYPE html>
 <html lang="th">
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Stock Dashboard — MT.FAC.AT</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style> 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<title>Withdraw Modal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg:      #07101f;
-  --s1:      #0c1a2e;
-  --s2:      #112240;
-  --s3:      #162d50;
-  --border:  #1b3054;
-  --border2: #244070;
-  --text:    #ccd8ee;
-  --text2:   #8aa3c0;
-  --muted:   #4a6380;
-  --blue:    #4b9eff;
-  --cyan:    #00d4e8;
-  --green:   #18e0a0;
-  --yellow:  #ffb627;
-  --red:     #ff4d6a;
-  --orange:  #ff7b45;
-}
+  :root {
+    --bg:      #07101f;
+    --s1:      #0c1a2e;
+    --s2:      #112240;
+    --s3:      #162d50;
+    --border:  #1b3054;
+    --border2: #244070;
+    --text:    #ccd8ee;
+    --text2:   #8aa3c0;
+    --muted:   #4a6380;
+    --blue:    #4b9eff;
+    --orange:  #ff7b45;
+    --red:     #ff4d6a;
+  }
 
-html { scroll-behavior: smooth; }
-body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { 
+    font-family: 'Sarabun', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    min-height: 100vh;
+    /* BG Pattern for aesthetics */
+    background-image:
+      linear-gradient(rgba(75,158,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(75,158,255,0.03) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
 
-/* scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--s1); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  /* ──────────────────────────────────────
+     MODAL STYLES
+  ─────────────────────────────────────── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 800;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  
+  .modal {
+    background: var(--s2); border: 1px solid var(--border2);
+    border-radius: 22px; width: 100%; max-width: 440px;
+    padding: 30px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  
+  .modal h3 { 
+    font-size: 18px; font-weight: 800; margin-bottom: 22px; 
+    display: flex; align-items: center; gap: 8px; color: #fff;
+  }
 
-/* ─── BG TEXTURE ─── */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(75,158,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(75,158,255,0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
+  .m-field { margin-bottom: 14px; }
+  
+  .m-label { 
+    font-size: 12px; color: var(--muted); font-weight: 600; 
+    display: block; margin-bottom: 6px; 
+  }
+  
+  .m-input {
+    width: 100%; background: var(--s1);
+    border: 1px solid var(--border2); border-radius: 10px;
+    padding: 12px 14px; color: var(--text);
+    font-family: 'Sarabun', sans-serif; font-size: 14px;
+    outline: none; transition: border-color .2s;
+  }
+  .m-input:focus { border-color: var(--blue); }
+  .m-input::placeholder { color: var(--muted); }
+  
+  /* ทำให้ไอคอนปฏิทินในช่องวันที่เป็นสีขาว */
+  .m-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.6);
+    cursor: pointer;
+  }
 
-/* ─── SCREENS ─── */
-#screen-login, #screen-app { position: relative; z-index: 1; }
-#screen-login { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-#screen-app   { display: none; }
+  /* Month Selector Grid */
+  .month-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 6px;
+  }
+  .month-btn {
+    padding: 10px 4px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--s1); color: var(--text2);
+    font-size: 13px; font-weight: 600; font-family: 'Sarabun', sans-serif;
+    cursor: pointer; transition: .15s;
+  }
+  .month-btn:hover { border-color: var(--border2); }
+  .month-btn.act  { 
+    background: rgba(75,158,255,.15); 
+    border-color: rgba(75,158,255,.35); 
+    color: var(--blue); 
+  }
 
-/* ──────────────────────────────────────
-   LOGIN
-─────────────────────────────────────── */
-.login-card {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  width: 100%; max-width: 420px;
-  overflow: hidden;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(75,158,255,0.06);
-  animation: fadeUp .45s cubic-bezier(.16,1,.3,1) both;
-}
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-
-.login-head {
-  padding: 36px 32px 26px;
-  text-align: center;
-  background: linear-gradient(160deg, rgba(75,158,255,0.07) 0%, transparent 55%);
-  border-bottom: 1px solid var(--border);
-}
-.login-logo {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, var(--s2), var(--s3));
-  border: 1px solid var(--border2);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 30px; margin: 0 auto 16px;
-}
-.login-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
-.login-dept  { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
-
-.pin-wrap { margin-top: 22px; }
-.pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 16px; }
-.pin-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid var(--border2);
-  transition: all .2s cubic-bezier(.34,1.56,.64,1);
-}
-.pin-dot.on    { background: var(--blue); border-color: var(--blue); transform: scale(1.25); box-shadow: 0 0 16px rgba(75,158,255,0.55); }
-.pin-dot.err   { background: var(--red);  border-color: var(--red);  animation: jiggle .35s ease; }
-@keyframes jiggle { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-.pin-status { font-size: 12px; min-height: 20px; transition: color .2s; color: var(--muted); }
-.pin-status.ok    { color: var(--green); }
-.pin-status.wrong { color: var(--red);   }
-
-/* numpad */
-.numpad { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 22px 28px 28px; }
-.np-btn {
-  background: var(--s2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px 8px;
-  color: var(--text); font-size: 20px; font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
-  cursor: pointer; transition: all .15s; user-select: none;
-}
-.np-btn:hover  { background: var(--s3); border-color: var(--border2); }
-.np-btn:active { transform: scale(0.94); }
-.np-btn.del    { font-size: 18px; color: var(--muted); }
-.np-btn.empty  { visibility: hidden; }
-.np-hint { text-align: center; font-size: 11px; color: var(--muted); padding-bottom: 4px; }
-
-/* ──────────────────────────────────────
-   APP — HEADER
-─────────────────────────────────────── */
-#app-header {
-  position: sticky; top: 0; z-index: 200;
-  background: rgba(7,16,31,0.92);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border);
-}
-.header-inner {
-  max-width: 1500px; margin: 0 auto;
-  display: flex; align-items: center;
-  height: 60px; padding: 0 24px; gap: 16px;
-}
-.h-logo { font-size: 22px; }
-.h-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; white-space: nowrap; }
-.h-dept  { font-size: 11px; color: var(--muted); display: none; }
-@media(min-width:600px){ .h-dept { display: block; } }
-
-.h-tabs { display: flex; gap: 6px; }
-.h-tab {
-  padding: 7px 16px; border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent; color: var(--muted);
-  cursor: pointer; font-size: 13px; font-weight: 600;
-  font-family: 'Sarabun', sans-serif; transition: .2s;
-  white-space: nowrap;
-}
-.h-tab.act { background: rgba(75,158,255,0.15); border-color: rgba(75,158,255,0.3); color: var(--blue); }
-
-.h-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-.h-sync { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
-.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-.sync-dot.spin { background: var(--yellow); animation: blink 1s infinite; }
-.sync-dot.fail { background: var(--red); }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:.25} }
-
-.btn-icon {
-  width: 36px; height: 36px; border-radius: 9px;
-  background: var(--s2); border: 1px solid var(--border);
-  color: var(--text2); cursor: pointer; font-size: 15px;
-  display: flex; align-items: center; justify-content: center;
-  transition: .2s;
-}
-.btn-icon:hover { background: var(--s3); color: var(--text); }
-
-.btn-add {
-  padding: 8px 18px; border-radius: 9px;
-  background: linear-gradient(135deg,var(--blue),var(--cyan));
-  border: none; color: #fff; font-size: 13px; font-weight: 700;
-  font-family: 'Sarabun',sans-serif; cursor: pointer; transition: .15s;
-  white-space: nowrap;
-}
-.btn-add:hover { opacity: .88; }
-
-/* ──────────────────────────────────────
-   APP — MAIN & DASHBOARD
-─────────────────────────────────────── */
-.main { max-width: 1500px; margin: 0 auto; padding: 20px 24px 40px; }
-
-/* Dashboard Styles */
-.dash-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
-@media(min-width: 768px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
-.dash-card { background: var(--s1); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
-.dash-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 20px; letter-spacing: -0.2px; }
-.dash-list { display: flex; flex-direction: column; gap: 10px; }
-.dash-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(75,158,255,0.03); border-radius: 12px; border: 1px solid var(--border); transition: .2s; }
-.dash-item:hover { background: rgba(75,158,255,0.08); border-color: var(--border2); }
-.dash-item-name { font-weight: 700; font-size: 13px; color: var(--text); }
-.dash-item-stock { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 700; }
-.chart-container { position: relative; height: 260px; width: 100%; }
-
-/* stats */
-.stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
-@media(min-width:640px){ .stats { grid-template-columns: repeat(4,1fr); } }
-.stat-card {
-  background: var(--s1); border: 1px solid var(--border);
-  border-radius: 16px; padding: 18px 20px; cursor: default;
-  transition: border-color .2s;
-}
-.stat-card:hover { border-color: var(--border2); }
-.stat-card.clickable { cursor: pointer; }
-.stat-val  { font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 6px; font-family: 'IBM Plex Mono',monospace; }
-.stat-lbl  { font-size: 12px; color: var(--muted); font-weight: 600; }
-.stat-sub  { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-/* filters */
-.filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-.f-search {
-  flex: 1; min-width: 180px;
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 9px 14px;
-  color: var(--text); font-family: 'Sarabun',sans-serif; font-size: 13px;
-  outline: none; transition: border-color .2s;
-}
-.f-search:focus { border-color: var(--blue); }
-.f-search::placeholder { color: var(--muted); }
-.f-select {
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 9px 12px;
-  color: var(--text); font-family: 'Sarabun',sans-serif; font-size: 13px;
-  outline: none; cursor: pointer; appearance: none;
-}
-.f-count { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
-
-/* table */
-.tbl-wrap { background: var(--s1); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 700px; }
-thead th {
-  padding: 13px 16px; text-align: left; font-size: 10px; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; white-space: nowrap;
-  border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.15);
-}
-tbody td { padding: 11px 16px; border-bottom: 1px solid rgba(27,48,84,0.5); font-size: 13px; vertical-align: middle; }
-tbody tr:last-child td { border-bottom: none; }
-tbody tr { transition: background .15s; }
-tbody tr:hover { background: rgba(75,158,255,0.04); }
-tbody tr.row-low  { background: rgba(255,182,39,0.03); }
-tbody tr.row-out  { background: rgba(255,77,106,0.04); }
-
-/* cell types */
-.cell-id   { font-family: 'IBM Plex Mono',monospace; color: var(--cyan); font-weight: 600; font-size: 12px; }
-.cell-name { color: var(--text); font-weight: 600; }
-.cell-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.cell-num  { font-family: 'IBM Plex Mono',monospace; font-size: 14px; font-weight: 700; }
-.cell-unit { color: var(--muted); font-size: 12px; }
-
-/* stock bar */
-.stock-bar-wrap { display: flex; align-items: center; gap: 8px; }
-.stock-bar-bg { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 36px; }
-.stock-bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
-
-/* badge */
-.badge {
-  padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
-  letter-spacing: 0.3px; display: inline-block; white-space: nowrap;
-}
-.badge-E { background: rgba(75,158,255,0.12); color: #6bb8ff; border: 1px solid rgba(75,158,255,0.2); }
-.badge-P { background: rgba(0,212,232,0.10);  color: #00d4e8; border: 1px solid rgba(0,212,232,0.2); }
-.badge-M { background: rgba(255,182,39,0.10); color: #ffb627; border: 1px solid rgba(255,182,39,0.2); }
-.badge-C { background: rgba(24,224,160,0.10); color: #18e0a0; border: 1px solid rgba(24,224,160,0.2); }
-.badge-X { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
-
-/* action buttons */
-.act-row { display: flex; gap: 5px; }
-.act-btn {
-  padding: 5px 11px; border-radius: 7px; border: 1px solid; background: transparent;
-  font-size: 11px; font-weight: 700; font-family: 'Sarabun',sans-serif; cursor: pointer; transition: .15s; white-space: nowrap;
-}
-.act-out  { color: var(--red);    border-color: rgba(255,77,106,.3); }
-.act-out:hover  { background: rgba(255,77,106,.1); }
-.act-edit { color: var(--yellow); border-color: rgba(255,182,39,.3); }
-.act-edit:hover { background: rgba(255,182,39,.1); }
-
-/* img */
-.item-img {
-  width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: zoom-in; transition: transform .2s;
-}
-.item-img:hover { transform: scale(1.18); }
-.img-ph {
-  width: 42px; height: 42px; border-radius: 8px; background: var(--s2); border: 1px dashed var(--border2);
-  display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--muted);
-}
-
-/* empty state */
-.empty-state { text-align: center; padding: 64px 20px; color: var(--muted); }
-.empty-icon  { font-size: 40px; margin-bottom: 12px; }
-
-/* ──────────────────────────────────────
-   ORDER PAGE
-─────────────────────────────────────── */
-.order-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.order-title { font-size: 18px; font-weight: 800; }
-.order-pill  {
-  background: rgba(255,77,106,0.12); color: var(--red); border: 1px solid rgba(255,77,106,0.25);
-  padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
-}
-
-/* ──────────────────────────────────────
-   LOG PAGE
-─────────────────────────────────────── */
-.log-row {
-  display: grid; grid-template-columns: 80px 1fr 1fr auto; gap: 12px; align-items: center;
-  padding: 12px 16px; border-bottom: 1px solid rgba(27,48,84,0.5); font-size: 13px; transition: background .15s;
-}
-.log-row:hover { background: rgba(75,158,255,0.03); }
-.log-row:last-child { border-bottom: none; }
-.log-date { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); }
-.log-qty-pill {
-  background: rgba(255,77,106,0.1); color: var(--red); border: 1px solid rgba(255,77,106,0.2);
-  padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family:'IBM Plex Mono',monospace; text-align: center;
-}
-
-/* ──────────────────────────────────────
-   MODAL
-─────────────────────────────────────── */
-.overlay {
-  position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center; padding: 16px;
-}
-.overlay.open { display: flex; }
-.modal {
-  background: var(--s2); border: 1px solid var(--border2); border-radius: 22px; width: 100%; max-width: 440px;
-  padding: 30px 28px; animation: fadeUp .3s cubic-bezier(.16,1,.3,1) both;
-}
-.modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 22px; }
-.m-field { margin-bottom: 14px; }
-.m-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .4px; display: block; margin-bottom: 6px; }
-.m-input {
-  width: 100%; background: var(--s1); border: 1px solid var(--border2); border-radius: 10px;
-  padding: 10px 14px; color: var(--text); font-family: 'Sarabun',sans-serif; font-size: 13px; outline: none; transition: border-color .2s;
-}
-.m-input:focus { border-color: var(--blue); }
-.m-input::placeholder { color: var(--muted); }
-.m-hint { font-size: 12px; color: var(--cyan); min-height: 18px; margin: -6px 0 10px; font-family: 'IBM Plex Mono',monospace; }
-
-.m-row  { display: flex; gap: 10px; }
-.btn-cancel {
-  flex: 1; padding: 11px; border-radius: 11px; background: transparent; border: 1px solid var(--border2);
-  color: var(--text2); font-size: 14px; font-weight: 700; font-family: 'Sarabun',sans-serif; cursor: pointer; transition: .15s;
-}
-.btn-cancel:hover { background: var(--s1); }
-.btn-confirm {
-  flex: 2; padding: 11px; border-radius: 11px; background: linear-gradient(135deg,var(--orange),var(--red));
-  border: none; color: #fff; font-size: 14px; font-weight: 700; font-family: 'Sarabun',sans-serif; cursor: pointer; transition: .15s;
-}
-.btn-confirm:hover { opacity: .88; }
-.btn-confirm:disabled { background: var(--s1); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
-
-/* month selector */
-.month-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 18px; }
-.month-btn {
-  padding: 8px 4px; border-radius: 8px; border: 1px solid var(--border); background: var(--s1); color: var(--text2);
-  font-size: 12px; font-weight: 600; font-family: 'Sarabun',sans-serif; cursor: pointer; transition: .15s;
-}
-.month-btn:hover { border-color: var(--border2); }
-.month-btn.act  { background: rgba(75,158,255,.15); border-color: rgba(75,158,255,.35); color: var(--blue); }
-
-/* ──────────────────────────────────────
-   NOTIF
-─────────────────────────────────────── */
-#notif {
-  position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 13px 20px; border-radius: 13px; color: #fff;
-  font-size: 14px; font-weight: 700; font-family: 'Sarabun',sans-serif; display: none; max-width: 320px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.55); animation: slideIn .25s ease;
-}
-@keyframes slideIn { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
-#prog { position: fixed; top: 0; left: 0; z-index: 9998; height: 3px; background: var(--cyan); width: 0; transition: width .3s; }
+  /* Buttons */
+  .m-row  { display: flex; gap: 12px; margin-top: 24px; }
+  .btn-cancel {
+    flex: 1; padding: 12px; border-radius: 11px;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); font-size: 14px; font-weight: 700;
+    font-family: 'Sarabun', sans-serif; cursor: pointer; transition: .15s;
+  }
+  .btn-cancel:hover { background: var(--s1); color: #fff; }
+  
+  .btn-confirm {
+    flex: 2; padding: 12px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--orange), var(--red));
+    border: none; color: #fff; font-size: 15px; font-weight: 700;
+    font-family: 'Sarabun', sans-serif; cursor: pointer; transition: .15s;
+    box-shadow: 0 4px 15px rgba(255, 77, 106, 0.3);
+  }
+  .btn-confirm:hover { opacity: .9; transform: translateY(-1px); }
 </style>
 </head>
 <body>
 
-<div id="prog"></div>
-<div id="notif"></div>
-
-<div id="screen-login">
-  <div class="login-card">
-    <div class="login-head">
-      <div class="login-logo">📦</div>
-      <div class="login-title">Stock Dashboard</div>
-      <div class="login-dept">แผนกซ่อมบำรุง MT.FAC.AT ปี 2569</div>
-      <div class="pin-wrap">
-        <div class="pin-dots">
-          <div class="pin-dot" id="d0"></div>
-          <div class="pin-dot" id="d1"></div>
-          <div class="pin-dot" id="d2"></div>
-          <div class="pin-dot" id="d3"></div>
-        </div>
-        <div class="pin-status" id="pin-st">กรอก PIN 4 หลักเพื่อเข้าใช้งาน</div>
-      </div>
-    </div>
-    <div class="numpad" id="numpad">
-      <button class="np-btn" onclick="npPress('1')">1</button>
-      <button class="np-btn" onclick="npPress('2')">2</button>
-      <button class="np-btn" onclick="npPress('3')">3</button>
-      <button class="np-btn" onclick="npPress('4')">4</button>
-      <button class="np-btn" onclick="npPress('5')">5</button>
-      <button class="np-btn" onclick="npPress('6')">6</button>
-      <button class="np-btn" onclick="npPress('7')">7</button>
-      <button class="np-btn" onclick="npPress('8')">8</button>
-      <button class="np-btn" onclick="npPress('9')">9</button>
-      <button class="np-btn empty"></button>
-      <button class="np-btn" onclick="npPress('0')">0</button>
-      <button class="np-btn del" onclick="npDel()">⌫</button>
-    </div>
-    <div class="np-hint">แตะตัวเลข หรือใช้แป้นพิมพ์</div>
-    <input id="kb-pin" type="password" inputmode="numeric" maxlength="4" style="position:absolute; left:-9999px; opacity:0;">
-  </div>
-</div>
-
-<div id="screen-app">
-
-  <div id="app-header">
-    <div class="header-inner">
-      <span class="h-logo">📦</span>
-      <div>
-        <div class="h-title">Stock Dashboard</div>
-        <div class="h-dept">MT.FAC.AT 2569</div>
-      </div>
-      <div class="h-tabs">
-        <button class="h-tab act" id="tab-dashboard" onclick="switchTab('dashboard')">แดชบอร์ด</button>
-        <button class="h-tab"     id="tab-stock"     onclick="switchTab('stock')">คลังสินค้า</button>
-        <button class="h-tab"     id="tab-order"     onclick="switchTab('order')">จุดสั่งซื้อ</button>
-        <button class="h-tab"     id="tab-log"       onclick="switchTab('log')">ประวัติเบิก</button>
-      </div>
-      <div class="h-right">
-        <div class="h-sync">
-          <div class="sync-dot" id="sync-dot"></div>
-          <span id="sync-txt">พร้อมใช้</span>
-        </div>
-        <button class="btn-icon" title="รีโหลดข้อมูล" onclick="loadData()">⟳</button>
-        <button class="btn-add" onclick="openWithdrawModal()">+ เบิกออก</button>
-        <button class="btn-icon" title="ออกจากระบบ" onclick="logout()">🔒</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="main">
-
-    <div id="tab-dashboard-content">
-      <div class="stats" id="stats-grid"></div>
-
-      <div class="dash-grid">
-        <div class="dash-card">
-          <h3 class="dash-title">📊 สัดส่วนอะไหล่ตามหมวดหมู่</h3>
-          <div class="chart-container">
-            <canvas id="catChart"></canvas>
-          </div>
-        </div>
-        <div class="dash-card">
-          <h3 class="dash-title">⚠️ 5 อันดับอะไหล่ใกล้หมดสต็อก</h3>
-          <div id="low-stock-list" class="dash-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="tab-stock-content" style="display:none">
-      <div class="filters">
-        <input class="f-search" id="srch" placeholder="🔍 ค้นหารหัส หรือชื่ออะไหล่..." oninput="renderStock()">
-        <select class="f-select" id="cat-filter" onchange="renderStock()">
-          <option value="">ทุกหมวดหมู่</option>
-        </select>
-        <select class="f-select" id="month-view" onchange="renderStock()">
-          <option value="0">ม.ค.</option><option value="1">ก.พ.</option>
-          <option value="2">มี.ค.</option><option value="3">เม.ย.</option>
-          <option value="4">พ.ค.</option><option value="5">มิ.ย.</option>
-          <option value="6">ก.ค.</option><option value="7">ส.ค.</option>
-          <option value="8">ก.ย.</option><option value="9">ต.ค.</option>
-          <option value="10">พ.ย.</option><option value="11">ธ.ค.</option>
-        </select>
-        <span class="f-count" id="count-lbl"></span>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:56px">รูป</th>
-              <th style="width:130px">รหัส</th>
-              <th>ชื่ออะไหล่</th>
-              <th style="width:120px">หมวดหมู่</th>
-              <th style="width:80px">Min</th>
-              <th style="width:160px">คงเหลือ</th>
-              <th style="width:70px">หน่วย</th>
-              <th style="width:130px">ดำเนินการ</th>
-            </tr>
-          </thead>
-          <tbody id="stock-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-order-content" style="display:none">
-      <div class="order-head">
-        <div class="order-title">รายการที่ต้องสั่งเพิ่ม</div>
-        <div class="order-pill" id="order-count-pill">0 รายการ</div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:56px">รูป</th>
-              <th style="width:130px">รหัส</th>
-              <th>ชื่ออะไหล่</th>
-              <th style="width:100px">Min Stock</th>
-              <th style="width:140px">คงเหลือ</th>
-              <th style="width:100px">ขาดอีก</th>
-              <th style="width:120px">ดำเนินการ</th>
-            </tr>
-          </thead>
-          <tbody id="order-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-log-content" style="display:none">
-      <div class="tbl-wrap">
-        <div id="log-list"></div>
-      </div>
-    </div>
-
-  </div></div><div class="overlay" id="modal-withdraw" onclick="if(event.target===this)closeWithdraw()">
+<div class="overlay" id="modal-withdraw">
   <div class="modal">
     <h3>📤 บันทึกการเบิกออก</h3>
 
     <div class="m-field">
       <label class="m-label">ชื่อผู้เบิก</label>
-      <input class="m-input" id="w-by" placeholder="ระบุชื่อ-นามสกุล">
+      <input class="m-input" id="w-by" placeholder="T">
     </div>
 
     <div class="m-field">
@@ -527,14 +134,13 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
 
     <div class="m-field">
       <label class="m-label">เดือนที่ลงบันทึก</label>
-      <div class="month-grid" id="month-grid"></div>
+      <div class="month-grid" id="month-grid">
+        </div>
     </div>
 
     <div class="m-field">
       <label class="m-label">รหัสอะไหล่</label>
-      <input class="m-input" id="w-id" list="w-datalist" placeholder="พิมพ์รหัสหรือชื่อ..." oninput="onWItem()">
-      <datalist id="w-datalist"></datalist>
-      <div class="m-hint" id="w-hint"></div>
+      <input class="m-input" id="w-id" placeholder="พิมพ์รหัสหรือชื่อ...">
     </div>
 
     <div class="m-field">
@@ -548,558 +154,39 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
     </div>
 
     <div class="m-row">
-      <button class="btn-cancel" onclick="closeWithdraw()">ยกเลิก</button>
-      <button class="btn-confirm" id="w-submit" onclick="submitWithdraw()">✅ ยืนยันเบิก</button>
+      <button class="btn-cancel" onclick="alert('ปิดหน้าต่าง')">ยกเลิก</button>
+      <button class="btn-confirm" onclick="alert('ยืนยันการเบิก!')">✅ ยืนยันเบิก</button>
     </div>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════
-//  CONFIG
-// ════════════════════════════════════════════════
-const GAS_URL  = 'https://script.google.com/macros/s/AKfycbwA4kVSjWOhuYE_XIQGNbsg2dX69Z2zp-iNR_V3r7Mdmn9M7zNuqHzoQqShCSEvPnQH/exec';
-const PASSWORD = '1234';
-
-const MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-const MONTH_FULL  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-const CAT_BADGE   = { Electrical:'badge-E', Pneumatic:'badge-P', Mechanical:'badge-M', Consumables:'badge-C' };
-const CAT_TH      = { Electrical:'ไฟฟ้า', Pneumatic:'นิวแมติก', Mechanical:'เครื่องกล', Consumables:'วัสดุสิ้นเปลือง' };
-
-// ════════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════════
-let products    = [];
-let logs        = [];
-let categories  = [];
-let currentTab  = 'dashboard'; // เปลี่ยนหน้าแรกเป็น Dashboard
-let isSaving    = false;
-let selectedMonth = new Date().getMonth();
-let pinStr      = '';
-let catChartInstance = null; // ตัวแปรเก็บกราฟ
-
-// ════════════════════════════════════════════════
-//  PIN 
-// ════════════════════════════════════════════════
-function npPress(ch) {
-  if (pinStr.length >= 4) return;
-  pinStr += ch;
-  updateDots();
-  if (pinStr.length === 4) checkPin();
-}
-function npDel() {
-  pinStr = pinStr.slice(0, -1);
-  updateDots();
-}
-function updateDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('d' + i).className = 'pin-dot' + (i < pinStr.length ? ' on' : '');
-  }
-}
-function checkPin() {
-  if (pinStr === PASSWORD) {
-    document.getElementById('pin-st').className = 'pin-status ok';
-    document.getElementById('pin-st').textContent = 'ปลดล็อกแล้ว กำลังโหลด...';
-    setTimeout(() => {
-      document.getElementById('screen-login').style.display = 'none';
-      document.getElementById('screen-app').style.display = 'block';
-      loadData();
-    }, 400);
-  } else {
-    document.querySelectorAll('.pin-dot').forEach(d => d.className = 'pin-dot err');
-    document.getElementById('pin-st').className = 'pin-status wrong';
-    document.getElementById('pin-st').textContent = 'PIN ไม่ถูกต้อง!';
-    pinStr = '';
-    setTimeout(() => {
-      updateDots();
-      document.getElementById('pin-st').className = 'pin-status';
-      document.getElementById('pin-st').textContent = 'กรอก PIN 4 หลักเพื่อเข้าใช้งาน';
-    }, 1200);
-  }
-}
-
-document.getElementById('kb-pin').addEventListener('input', function () {
-  const ch = this.value.replace(/\D/g, '').slice(-1);
-  this.value = '';
-  if (ch) npPress(ch);
-});
-document.getElementById('kb-pin').addEventListener('keydown', e => {
-  if (e.key === 'Backspace') { e.preventDefault(); npDel(); }
-});
-document.getElementById('screen-login').addEventListener('click', () => {
-  document.getElementById('kb-pin').focus();
-});
-document.getElementById('kb-pin').focus();
-
-// ════════════════════════════════════════════════
-//  DATA
-// ════════════════════════════════════════════════
-async function loadData() {
-  setSync('spin', 'กำลังโหลด...');
-  setProgress(20);
-  try {
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(onData)
-        .withFailureHandler(() => { setSync('fail','โหลดไม่สำเร็จ'); showNotif('❌ โหลดข้อมูลล้มเหลว','var(--red)'); })
-        .getAppData();
-    } else {
-      const res = await fetch(GAS_URL + '?action=getAppData');
-      if (!res.ok) throw new Error('เครือข่ายมีปัญหา');
-      const d   = await res.json();
-      onData(d);
-    }
-  } catch(e) {
-    setSync('fail', 'ไม่มีสัญญาณ');
-    showNotif('❌ ' + e.message, 'var(--red)');
-  }
-}
-
-function onData(d) {
-  products   = d.products   || [];
-  logs       = d.logs       || [];
-  categories = d.categories || [];
-  setProgress(100);
-  setTimeout(() => setProgress(0), 500);
-  setSync('ok', 'อัปเดตแล้ว');
-  buildCatFilter();
-  buildDatalist();
-  buildMonthGrid();
-  // set month selector default = ปัจจุบัน
-  const mv = document.getElementById('month-view');
-  mv.value = String(new Date().getMonth());
-  updateAll();
-}
-
-function buildCatFilter() {
-  const sel = document.getElementById('cat-filter');
-  sel.innerHTML = '<option value="">ทุกหมวดหมู่</option>';
-  const cats = categories.length ? categories : [...new Set(products.map(p => p.type).filter(Boolean))];
-  cats.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c; opt.textContent = CAT_TH[c] || c;
-    sel.appendChild(opt);
-  });
-}
-
-function buildDatalist() {
-  const dl = document.getElementById('w-datalist');
-  dl.innerHTML = products.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-}
-
-function buildMonthGrid() {
-  const grid = document.getElementById('month-grid');
-  grid.innerHTML = MONTH_SHORT.map((m, i) =>
-    `<button class="month-btn${i===selectedMonth?' act':''}" onclick="selectMonth(${i})">${m}</button>`
-  ).join('');
-}
-
-// ════════════════════════════════════════════════
-//  TABS
-// ════════════════════════════════════════════════
-function switchTab(t) {
-  currentTab = t;
-  ['dashboard','stock','order','log'].forEach(x => {
-    document.getElementById('tab-'+x).className = 'h-tab' + (x===t?' act':'');
-    document.getElementById('tab-'+x+'-content').style.display = x===t?'':'none';
-  });
-  if (t==='dashboard') renderDashboard();
-  if (t==='stock') renderStock();
-  if (t==='order') renderOrder();
-  if (t==='log')   renderLog();
-}
-
-function updateAll() {
-  renderStats(); 
-  if (currentTab==='dashboard') renderDashboard();
-  if (currentTab==='stock') renderStock();
-  if (currentTab==='order') renderOrder();
-  if (currentTab==='log')   renderLog();
-}
-
-// ════════════════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════════════════
-function getStock(p, monthIdx) {
-  if (p.months && p.months[monthIdx] !== undefined) return Number(p.months[monthIdx].bal) || 0;
-  return Number(p.opening) || 0;
-}
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ════════════════════════════════════════════════
-//  STATS & DASHBOARD
-// ════════════════════════════════════════════════
-function renderStats() {
-  const mv = parseInt(document.getElementById('month-view') ? document.getElementById('month-view').value : new Date().getMonth());
-  const total = products.length;
-  const low   = products.filter(p => getStock(p,mv) < Number(p.minStock||0)).length;
-  const out   = products.filter(p => getStock(p,mv) <= 0).length;
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--blue)">${total}</div>
-      <div class="stat-lbl">รายการทั้งหมด</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--green)">${total-low}</div>
-      <div class="stat-lbl">สต็อกปกติ</div>
-    </div>
-    <div class="stat-card clickable" onclick="switchTab('order')">
-      <div class="stat-val" style="color:var(--yellow)">${low}</div>
-      <div class="stat-lbl">ต้องสั่งเพิ่ม ⚠️</div>
-      <div class="stat-sub">แตะเพื่อดูรายการ</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--red)">${out}</div>
-      <div class="stat-lbl">หมดสต็อก</div>
-    </div>
-  `;
-}
-
-function renderDashboard() {
-  const mv = parseInt(document.getElementById('month-view').value);
-
-  // 1. Chart: สัดส่วนหมวดหมู่
-  const catCounts = {};
-  products.forEach(p => {
-    const c = p.type || 'ไม่ระบุ';
-    catCounts[c] = (catCounts[c] || 0) + 1;
-  });
-
-  const labels = Object.keys(catCounts).map(c => CAT_TH[c] || c);
-  const data = Object.values(catCounts);
-
-  const ctx = document.getElementById('catChart');
-  if(catChartInstance) catChartInstance.destroy();
+  // 1. สร้างปุ่มเดือน
+  const MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  let selectedMonth = new Date().getMonth(); // ค่า Default คือเดือนปัจจุบัน
   
-  Chart.defaults.color = '#8aa3c0';
-  Chart.defaults.font.family = "'Sarabun', sans-serif";
-
-  catChartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: data,
-        backgroundColor: ['#4b9eff', '#00d4e8', '#18e0a0', '#ffb627', '#ff4d6a', '#8aa3c0'],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '72%',
-      plugins: {
-        legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
-      }
-    }
-  });
-
-  // 2. รายการ 5 อันดับสต็อกใกล้หมด
-  const lowStock = products
-    .map(p => ({ ...p, currentStock: getStock(p, mv) }))
-    .filter(p => p.currentStock <= Number(p.minStock || 0))
-    .sort((a, b) => a.currentStock - b.currentStock)
-    .slice(0, 5);
-
-  const list = document.getElementById('low-stock-list');
-  if(lowStock.length === 0) {
-    list.innerHTML = `<div class="empty-state" style="padding: 40px 0;"><div class="empty-icon">🎉</div>สต็อกปกติทุกรายการ</div>`;
-  } else {
-    list.innerHTML = lowStock.map(p => `
-      <div class="dash-item" onclick="switchTab('order')" style="cursor:pointer" title="แตะเพื่อดูจุดสั่งซื้อ">
-        <div>
-          <div class="dash-item-name">${esc(p.name)}</div>
-          <div style="font-size:11px; color:var(--muted)">${esc(p.id)}</div>
-        </div>
-        <div class="dash-item-stock" style="color: ${p.currentStock <= 0 ? 'var(--red)' : 'var(--yellow)'}">
-          ${p.currentStock} <span style="font-size:10px;color:var(--muted)">${esc(p.unit)}</span>
-        </div>
-      </div>
-    `).join('');
-  }
-}
-
-// ════════════════════════════════════════════════
-//  STOCK TABLE
-// ════════════════════════════════════════════════
-function renderStock() {
-  const q   = document.getElementById('srch').value.toLowerCase();
-  const cat = document.getElementById('cat-filter').value;
-  const mv  = parseInt(document.getElementById('month-view').value);
-
-  const filtered = products.filter(p => {
-    const matchQ   = !q || p.id.toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
-    const matchCat = !cat || p.type === cat;
-    return matchQ && matchCat;
-  });
-
-  document.getElementById('count-lbl').textContent = `พบ ${filtered.length} รายการ`;
-
-  if (!filtered.length) {
-    document.getElementById('stock-tbody').innerHTML =
-      `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔍</div>ไม่พบรายการที่ค้นหา</div></td></tr>`;
-    return;
+  function buildMonthGrid() {
+    const grid = document.getElementById('month-grid');
+    grid.innerHTML = MONTH_SHORT.map((m, i) =>
+      `<button class="month-btn ${i === selectedMonth ? ' act' : ''}" onclick="selectMonth(${i})">${m}</button>`
+    ).join('');
   }
 
-  document.getElementById('stock-tbody').innerHTML = filtered.map(p => {
-    const stock = getStock(p, mv);
-    const min   = Number(p.minStock) || 0;
-    const isLow = stock < min;
-    const isOut = stock <= 0;
-    const pct   = min > 0 ? Math.min(100, (stock/min)*100) : 100;
-    const clr   = isOut ? 'var(--red)' : isLow ? 'var(--yellow)' : 'var(--green)';
-    const rowCls = isOut ? 'row-out' : isLow ? 'row-low' : '';
-    const badgeCls = CAT_BADGE[p.type] || 'badge-X';
-    const catTh    = CAT_TH[p.type]   || (p.type||'-');
-
-    return `<tr class="${rowCls}">
-      <td>${p.image ? `<img src="${esc(p.image)}" class="item-img" onclick="window.open('${esc(p.image)}','_blank')">` : `<div class="img-ph">🔩</div>`}</td>
-      <td><span class="cell-id">${esc(p.id)}</span></td>
-      <td><div class="cell-name">${esc(p.name)}</div>${p.supplier ? `<div class="cell-sub">${esc(p.supplier)}</div>` : ''}</td>
-      <td><span class="badge ${badgeCls}">${esc(catTh)}</span></td>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:13px">${min}</td>
-      <td>
-        <div class="stock-bar-wrap">
-          <b class="cell-num" style="color:${clr}">${stock}</b>
-          <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${pct}%;background:${clr}"></div></div>
-        </div>
-      </td>
-      <td><span class="cell-unit">${esc(p.unit)}</span></td>
-      <td>
-        <div class="act-row">
-          <button class="act-btn act-out"  onclick="quickWithdraw('${esc(p.id)}')">เบิก</button>
-          <button class="act-btn act-edit" onclick="openEditMin('${esc(p.id)}')">Min ✏️</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-// ════════════════════════════════════════════════
-//  ORDER TABLE
-// ════════════════════════════════════════════════
-function renderOrder() {
-  const mv   = parseInt(document.getElementById('month-view').value);
-  const low  = products.filter(p => getStock(p,mv) < Number(p.minStock||0));
-  document.getElementById('order-count-pill').textContent = `${low.length} รายการ`;
-
-  if (!low.length) {
-    document.getElementById('order-tbody').innerHTML =
-      `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">✅</div>สต็อกปกติทุกรายการ ไม่มีรายการที่ต้องสั่ง</div></td></tr>`;
-    return;
+  // 2. ฟังก์ชันเมื่อกดเลือกเดือน
+  function selectMonth(m) {
+    selectedMonth = m;
+    document.querySelectorAll('.month-btn').forEach((btn, i) => {
+      btn.className = 'month-btn' + (i === m ? ' act' : '');
+    });
   }
 
-  document.getElementById('order-tbody').innerHTML = low.map(p => {
-    const stock  = getStock(p, mv);
-    const min    = Number(p.minStock) || 0;
-    const lack   = min - stock;
-    const clr    = stock <= 0 ? 'var(--red)' : 'var(--yellow)';
-    return `<tr class="${stock<=0?'row-out':'row-low'}">
-      <td>${p.image ? `<img src="${esc(p.image)}" class="item-img">` : `<div class="img-ph">🔩</div>`}</td>
-      <td><span class="cell-id">${esc(p.id)}</span></td>
-      <td><div class="cell-name">${esc(p.name)}</div></td>
-      <td style="font-family:'IBM Plex Mono',monospace">${min}</td>
-      <td><b class="cell-num" style="color:${clr}">${stock}</b></td>
-      <td><b style="color:var(--red);font-family:'IBM Plex Mono',monospace">+${lack}</b></td>
-      <td><button class="act-btn act-out" onclick="quickWithdraw('${esc(p.id)}')">เบิก</button></td>
-    </tr>`;
-  }).join('');
-}
-
-// ════════════════════════════════════════════════
-//  LOG
-// ════════════════════════════════════════════════
-function renderLog() {
-  if (!logs.length) {
-    document.getElementById('log-list').innerHTML =
-      `<div class="empty-state"><div class="empty-icon">📋</div>ยังไม่มีประวัติการเบิก</div>`;
-    return;
-  }
-  document.getElementById('log-list').innerHTML = logs.map(l => `
-    <div class="log-row">
-      <div class="log-date">${esc(l.date)}</div>
-      <div>
-        <div style="font-weight:600">${esc(l.name)}</div>
-        <div style="font-size:11px;color:var(--muted)">${esc(l.id)}</div>
-      </div>
-      <div style="font-size:12px;color:var(--muted)">
-        <div style="font-weight:600;color:var(--text2)">${esc(l.by)}</div>
-        <div>${esc(l.reason||'-')}</div>
-      </div>
-      <div class="log-qty-pill">-${esc(String(l.qty))}</div>
-    </div>
-  `).join('');
-}
-
-// ════════════════════════════════════════════════
-//  WITHDRAW MODAL
-// ════════════════════════════════════════════════
-function openWithdrawModal(prefillId) {
-  document.getElementById('modal-withdraw').classList.add('open');
-  document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('w-id').value   = prefillId || '';
-  document.getElementById('w-qty').value  = '';
-  document.getElementById('w-reason').value = '';
-  document.getElementById('w-hint').textContent = '';
-  selectedMonth = new Date().getMonth();
-  buildMonthGrid();
-  if (prefillId) onWItem();
-}
-function closeWithdraw() {
-  if (!isSaving) document.getElementById('modal-withdraw').classList.remove('open');
-}
-function quickWithdraw(id) { openWithdrawModal(id); }
-
-function selectMonth(m) {
-  selectedMonth = m;
-  document.querySelectorAll('.month-btn').forEach((btn, i) => { btn.className = 'month-btn' + (i===m?' act':''); });
-  onWItem();
-}
-
-function onWItem() {
-  const val = document.getElementById('w-id').value.trim().toLowerCase();
-  const p   = products.find(x => x.id.toLowerCase()===val || (x.name||'').toLowerCase()===val);
-  const hint= document.getElementById('w-hint');
-  if (!p) { hint.textContent = ''; return; }
-  const stock = getStock(p, selectedMonth);
-  const min   = Number(p.minStock)||0;
-  const status= stock<=0 ? '🔴 หมดสต็อก' : stock<min ? '🟡 ใกล้หมด' : '🟢 ปกติ';
-  hint.textContent = `${p.name} · คงเหลือ ${stock} ${p.unit} ${status}`;
-}
-
-async function submitWithdraw() {
-  if (isSaving) return;
-  const byVal     = document.getElementById('w-by').value.trim();
-  const dateVal   = document.getElementById('w-date').value;
-  const idVal     = document.getElementById('w-id').value.trim();
-  const qtyVal    = parseInt(document.getElementById('w-qty').value);
-  const reasonVal = document.getElementById('w-reason').value.trim();
-
-  if (!byVal)               { showNotif('⚠️ ระบุชื่อผู้เบิก','var(--yellow)'); return; }
-  if (!dateVal)             { showNotif('⚠️ เลือกวันที่','var(--yellow)'); return; }
-  if (!idVal)               { showNotif('⚠️ ระบุรหัสอะไหล่','var(--yellow)'); return; }
-  if (!qtyVal || qtyVal<=0) { showNotif('⚠️ ระบุจำนวน','var(--yellow)'); return; }
-  if (!reasonVal)           { showNotif('⚠️ ระบุเหตุผลการเบิก','var(--yellow)'); return; }
-
-  const p = products.find(x => x.id.toLowerCase()===idVal.toLowerCase());
-  if (!p) { showNotif('❌ ไม่พบรหัสในระบบ','var(--red)'); return; }
-
-  const stock = getStock(p, selectedMonth);
-  if (qtyVal > stock) { showNotif(`❌ สต็อกไม่พอ (เหลือ ${stock} ${p.unit})`,'var(--red)'); return; }
-
-  const colOut = 11 + (selectedMonth * 3); 
-  const colBal = 12 + (selectedMonth * 3); 
-
-  const m       = p.months && p.months[selectedMonth];
-  const oldOut  = m ? Number(m.out)||0 : 0;
-  const newOut  = oldOut + qtyVal;
-  const newBal  = stock  - qtyVal;
-
-  const updates = [
-    { row: p.rowIdx, col: colOut, val: newOut },
-    { row: p.rowIdx, col: colBal, val: newBal }
-  ];
-
-  const d = new Date(dateVal);
-  const dateFormatted = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`;
-
-  const logEntry = {
-    date:      dateFormatted,
-    by:        byVal,
-    id:        p.id,
-    name:      p.name,
-    monthName: MONTH_FULL[selectedMonth] + ' ' + (new Date().getFullYear()+543),
-    qty:       qtyVal,
-    reason:    reasonVal
+  // 3. เซ็ตค่า Default เมื่อโหลดหน้าเว็บ
+  window.onload = function() {
+    buildMonthGrid();
+    // เซ็ตวันที่เป็นวันนี้
+    document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
   };
-
-  isSaving = true;
-  const btn = document.getElementById('w-submit');
-  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
-
-  const onSuccess = (res) => {
-    if (res && res.ok===false) {
-      showNotif('❌ '+(res.msg||'บันทึกล้มเหลว'),'var(--red)');
-    } else {
-      if (p.months && p.months[selectedMonth]) {
-        p.months[selectedMonth].out = newOut;
-        p.months[selectedMonth].bal = newBal;
-      }
-      logs.unshift({ date: dateFormatted, by: byVal, id: p.id, name: p.name, qty: qtyVal, reason: reasonVal });
-      if (logs.length > 10) logs.pop();
-      updateAll();
-      closeWithdraw();
-      showNotif('✅ บันทึกสำเร็จ ส่ง Telegram แล้ว 🚀','var(--green)');
-    }
-    isSaving = false;
-    btn.disabled = false; btn.textContent = '✅ ยืนยันเบิก';
-  };
-
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-    google.script.run
-      .withSuccessHandler(onSuccess)
-      .withFailureHandler(e => {
-        showNotif('❌ '+e.message,'var(--red)');
-        isSaving=false; btn.disabled=false; btn.textContent='✅ ยืนยันเบิก';
-      })
-      .saveData(updates, [logEntry]);
-  } else {
-    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveData', updates: updates, logs: [logEntry] }) })
-    .then(r => r.json()).then(onSuccess)
-    .catch(e => { showNotif('❌ '+e.message,'var(--red)'); isSaving=false; btn.disabled=false; btn.textContent='✅ ยืนยันเบิก'; });
-  }
-}
-
-function openEditMin(id) {
-  const p = products.find(x => x.id===id);
-  if (!p) return;
-  const v = prompt(`แก้ไข Min Stock ของ\n${p.id} — ${p.name}\n\nMin Stock ปัจจุบัน: ${p.minStock}`, p.minStock);
-  if (v===null) return;
-  const n = parseInt(v);
-  if (isNaN(n)||n<0) { showNotif('⚠️ ค่าไม่ถูกต้อง','var(--yellow)'); return; }
-  const old = p.minStock;
-  p.minStock = n;
-  updateAll();
-  
-  const upd = [{ row: p.rowIdx, col: 9, val: n }];
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-    google.script.run
-      .withSuccessHandler(r => showNotif(r&&r.ok===false?'❌ '+(r.msg||'ล้มเหลว'):'✅ อัปเดต Min Stock แล้ว','var(--green)'))
-      .withFailureHandler(() => { p.minStock=old; updateAll(); })
-      .saveData(upd, []);
-  } else {
-    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveData', updates: upd, logs: [] }) })
-    .then(r => r.json())
-    .then(r => showNotif(r&&r.ok===false?'❌ '+(r.msg||'ล้มเหลว'):'✅ อัปเดต Min Stock แล้ว','var(--green)'))
-    .catch(e => { p.minStock=old; updateAll(); showNotif('❌ ล้มเหลว: ' + e.message, 'var(--red)'); });
-  }
-}
-
-function logout() {
-  if (!confirm('ออกจากระบบ?')) return;
-  pinStr = '';
-  document.getElementById('screen-app').style.display   = 'none';
-  document.getElementById('screen-login').style.display = 'flex';
-  updateDots();
-  document.getElementById('pin-st').className   = 'pin-status';
-  document.getElementById('pin-st').textContent = 'กรอก PIN 4 หลักเพื่อเข้าใช้งาน';
-  document.getElementById('kb-pin').focus();
-}
-
-function setSync(state, txt) {
-  const dot = document.getElementById('sync-dot');
-  dot.className = 'sync-dot' + (state==='spin'?' spin':state==='fail'?' fail':'');
-  document.getElementById('sync-txt').textContent = txt;
-}
-function setProgress(pct) { document.getElementById('prog').style.width = pct + '%'; }
-function showNotif(msg, color) {
-  const n = document.getElementById('notif');
-  n.textContent = msg; n.style.background = color||'var(--green)';
-  n.style.display = 'block';
-  clearTimeout(n._t);
-  n._t = setTimeout(() => n.style.display='none', 3500);
-}
 </script>
+
 </body>
 </html>
