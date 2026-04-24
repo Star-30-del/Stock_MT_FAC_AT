@@ -41,7 +41,7 @@
   --log-text: #f8fafc;
   --log-muted: #94a3b8;
   --log-blue: #38bdf8;
-  --cyan: #00d4e8; /* เพิ่มสีฟ้าตามแบบ */
+  --cyan: #00d4e8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,7 +61,7 @@ body { font-family: 'Sarabun', 'Inter', sans-serif; background-color: var(--bg-c
   background: var(--log-card); border-radius: 20px; width: 100%; max-width: 420px;
   padding: 40px 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   display: flex; flex-direction: column; border: 1px solid var(--log-border);
-  height: 580px; position: relative;
+  height: 640px; position: relative; /* เพิ่มความสูงการ์ดเพื่อรองรับช่องที่เพิ่มขึ้น */
 }
 
 /* ฝั่งซ้าย: บันทึกรายการด่วน */
@@ -77,7 +77,7 @@ body { font-family: 'Sarabun', 'Inter', sans-serif; background-color: var(--bg-c
   font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .qe-tab.act-in { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
-.qe-tab.act-out { background: var(--log-bg); color: var(--text-main); border-color: var(--log-border); }
+.qe-tab.act-out { background: var(--log-bg); color: var(--text-main); border-color: var(--log-border); } 
 .qe-tab.act-out.active-state { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 .qe-form-group { margin-bottom: 16px; }
@@ -89,11 +89,7 @@ body { font-family: 'Sarabun', 'Inter', sans-serif; background-color: var(--bg-c
 }
 .qe-input:focus { border-color: var(--log-blue); }
 
-/* ข้อความแสดงข้อมูลสินค้าหลังจากพิมพ์รหัส */
-.qe-item-info {
-  font-size: 13px; color: var(--cyan); margin-top: 8px; 
-  font-weight: 600; min-height: 18px; 
-}
+.qe-item-info { font-size: 13px; color: var(--cyan); margin-top: 8px; font-weight: 600; min-height: 18px; }
 
 .qe-btn-submit {
   width: 100%; padding: 14px; border-radius: 8px; border: none;
@@ -110,18 +106,13 @@ body { font-family: 'Sarabun', 'Inter', sans-serif; background-color: var(--bg-c
 .admin-subtitle { font-size: 14px; color: var(--log-muted); margin-bottom: 32px; }
 
 .pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 16px; }
-.pin-dot {
-  width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--log-border); transition: all .2s cubic-bezier(.34,1.56,.64,1);
-}
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--log-border); transition: all .2s cubic-bezier(.34,1.56,.64,1); }
 .pin-dot.on    { background: var(--log-blue); border-color: var(--log-blue); transform: scale(1.25); box-shadow: 0 0 16px rgba(56,189,248,0.4); }
 .pin-dot.err   { background: var(--danger);  border-color: var(--danger);  animation: jiggle .35s ease; }
 @keyframes jiggle { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
 .numpad { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: auto; width: 100%; max-width: 280px; }
-.np-btn {
-  background: transparent; border: 1px solid var(--log-border); border-radius: 12px; padding: 14px 8px; color: var(--log-text);
-  font-size: 20px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; cursor: pointer; transition: all .15s; user-select: none;
-}
+.np-btn { background: transparent; border: 1px solid var(--log-border); border-radius: 12px; padding: 14px 8px; color: var(--log-text); font-size: 20px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; cursor: pointer; transition: all .15s; user-select: none; }
 .np-btn:hover  { background: var(--log-border); }
 .np-btn:active { transform: scale(0.94); }
 .np-btn.del    { font-size: 18px; color: var(--log-muted); }
@@ -244,6 +235,11 @@ body { font-family: 'Sarabun', 'Inter', sans-serif; background-color: var(--bg-c
     <div class="qe-form-group">
       <label class="qe-label">อ้างอิง (โปรเจกต์/ผู้เบิก)</label>
       <input type="text" class="qe-input" id="qeRef" placeholder="-" disabled>
+    </div>
+
+    <div class="qe-form-group">
+      <label class="qe-label">หมายเหตุ / สาเหตุ</label>
+      <input type="text" class="qe-input" id="qeReason" placeholder="ระบุสาเหตุเพิ่มเติม..." disabled>
     </div>
 
     <button class="qe-btn-submit" id="qeSubmitBtn" onclick="submitQuickEntry()" disabled>ยืนยันรับเข้า</button>
@@ -461,7 +457,8 @@ window.onload = function() {
       document.getElementById('qeStatusText').textContent = `✅ เชื่อมต่อฐานข้อมูลแล้ว (${S.all.length} รายการ)`;
       document.getElementById('qeStatusText').style.color = "var(--success)";
       
-      ['qeId', 'qeQty', 'qeRef', 'qeSubmitBtn'].forEach(id => document.getElementById(id).disabled = false);
+      // ปลดล็อคให้ป้อนได้ทุกช่อง รวมถึงช่องหมายเหตุ (qeReason)
+      ['qeId', 'qeQty', 'qeRef', 'qeReason', 'qeSubmitBtn'].forEach(id => document.getElementById(id).disabled = false);
     })
     .catch(e => {
       document.getElementById('qeStatusText').textContent = '❌ ดึงข้อมูลล้มเหลว กรุณารีเฟรชหน้าเว็บ';
@@ -526,6 +523,7 @@ async function submitQuickEntry() {
   const idVal = document.getElementById('qeId').value.trim();
   const qtyVal = parseInt(document.getElementById('qeQty').value);
   const refVal = document.getElementById('qeRef').value.trim() || '-';
+  const reasonVal = document.getElementById('qeReason').value.trim() || 'รับ-เบิกด่วนหน้าตู้'; // ดึงค่าจากช่องสาเหตุ
   
   if (!idVal || !qtyVal || qtyVal <= 0) return toast('⚠️ กรุณาระบุรหัสและจำนวนที่ถูกต้อง', 'warning');
 
@@ -555,7 +553,7 @@ async function submitQuickEntry() {
     logEntry = {
       date: `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`, 
       by: refVal, id: p.id, name: p.name, monthName: MONTH_FULL[curMonth] + ' ' + (d.getFullYear()+543),
-      qty: qtyVal, reason: 'รับ-เบิกด่วน'
+      qty: qtyVal, reason: reasonVal // ใช้สาเหตุที่กรอก
     };
   }
 
@@ -563,14 +561,22 @@ async function submitQuickEntry() {
   btn.textContent = '⏳ กำลังบันทึก...'; btn.disabled = true;
 
   try {
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveData', updates: updates, logs: logEntry ? [logEntry] : [] }) });
+    // 📌 อัปเดต Fetch พร้อมแก้ปัญหา CORS (บังคับเป็น text/plain)
+    const res = await fetch(GAS_URL, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      redirect: 'follow',
+      body: JSON.stringify({ action: 'saveData', updates: updates, logs: logEntry ? [logEntry] : [] }) 
+    });
+    
     const data = await res.json();
     if(data.ok) {
       toast(`✅ บันทึก${qeMode==='in'?'รับเข้า':'เบิกออก'}เรียบร้อย`, 'success');
       document.getElementById('qeId').value = ''; 
       document.getElementById('qeQty').value = ''; 
       document.getElementById('qeRef').value = '';
-      document.getElementById('qeItemInfo').textContent = ''; // เคลียร์ข้อความโชว์ชื่อ
+      document.getElementById('qeReason').value = ''; // ล้างช่องสาเหตุด้วย
+      document.getElementById('qeItemInfo').textContent = ''; 
       
       // Update local state smoothly
       if(qeMode === 'in') { p.months[curMonth].in += qtyVal; } else { p.months[curMonth].out += qtyVal; }
@@ -736,7 +742,14 @@ function saveProductEdit() {
   if (newImg !== S.selectedProduct.image) updates.push({ row: S.selectedProduct.rowIdx, col: 7, val: newImg });
   if (!updates.length) return toast('ไม่มีการเปลี่ยนข้อมูล', 'info');
   document.getElementById('btnSaveEdit').disabled = true;
-  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveData', updates: updates, logs: [] }) }).then(r=>r.json()).then(r => { document.getElementById('btnSaveEdit').disabled = false; toast('แก้ไขสำเร็จ!', 'success'); loadDataFromSheet(); }).catch(e => { document.getElementById('btnSaveEdit').disabled = false; toast('ล้มเหลว', 'error');});
+  
+  // 📌 อัปเดต Fetch พร้อมแก้ปัญหา CORS
+  fetch(GAS_URL, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    redirect: 'follow',
+    body: JSON.stringify({ action: 'saveData', updates: updates, logs: [] }) 
+  }).then(r=>r.json()).then(r => { document.getElementById('btnSaveEdit').disabled = false; toast('แก้ไขสำเร็จ!', 'success'); loadDataFromSheet(); }).catch(e => { document.getElementById('btnSaveEdit').disabled = false; toast('ล้มเหลว', 'error');});
 }
 
 // ==========================================
@@ -794,25 +807,30 @@ function saveAll() {
     }
   });
   show('loadingScreen', true);
-  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveData', updates: data, logs: logs }) })
-    .then(r=>r.json()).then(r => { S.pending = {}; toast('บันทึกเรียบร้อย!', 'success'); loadDataFromSheet(); })
-    .catch(e => { show('loadingScreen', false); toast('ล้มเหลว: ' + e.message, 'error'); });
-}
 
-function uploadAddImage(input) {
-  let file = input.files[0]; if(!file) return;
-  let spin = document.getElementById('addSpin'); spin.style.display = 'block'; input.parentElement.style.display = 'none';
-  compressImage(file, 800, function(compData) {
-    if (typeof google === 'undefined' || !google.script) { toast('อัปโหลดต้องรันผ่าน Apps Script', 'error'); spin.style.display='none'; input.parentElement.style.display='inline-block'; return; }
-    google.script.run.withSuccessHandler(url => { spin.style.display='none'; input.parentElement.style.display='inline-block'; document.getElementById('addImage').value=url; toast('อัปโหลดเสร็จ!','success'); }).uploadImageToDrive(compData, "NewItem_" + file.name);
-  });
+  // 📌 อัปเดต Fetch พร้อมแก้ปัญหา CORS
+  fetch(GAS_URL, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    redirect: 'follow',
+    body: JSON.stringify({ action: 'saveData', updates: data, logs: logs }) 
+  })
+  .then(r=>r.json()).then(r => { S.pending = {}; toast('บันทึกเรียบร้อย!', 'success'); loadDataFromSheet(); })
+  .catch(e => { show('loadingScreen', false); toast('ล้มเหลว: ' + e.message, 'error'); });
 }
 
 function submitNewProduct() {
   let data = { id: document.getElementById('addId').value.trim(), type: document.getElementById('addType').value, name: document.getElementById('addName').value.trim(), price: document.getElementById('addPrice').value||0, unit: document.getElementById('addUnit').value.trim()||'-', image: document.getElementById('addImage').value.trim() };
   if (!data.id || !data.name) return toast('ระบุรหัสและชื่อ!', 'warning');
   document.getElementById('btnAddSave').disabled = true;
-  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addNewProduct', data: data }) }).then(r=>r.json())
+
+  // 📌 อัปเดต Fetch พร้อมแก้ปัญหา CORS
+  fetch(GAS_URL, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    redirect: 'follow',
+    body: JSON.stringify({ action: 'addNewProduct', data: data }) 
+  }).then(r=>r.json())
     .then(res => { document.getElementById('btnAddSave').disabled=false; toast('เพิ่มสินค้าใหม่สำเร็จ!','success'); loadDataFromSheet(); showView('dash'); })
     .catch(e => { document.getElementById('btnAddSave').disabled=false; toast('เกิดข้อผิดพลาด', 'error'); });
 }
