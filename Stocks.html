@@ -325,7 +325,7 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
 }
 .m-input:focus { border-color: var(--blue); }
 .m-input::placeholder { color: var(--muted); }
-.m-hint { font-size: 12px; color: var(--cyan); min-height: 18px; margin: -6px 0 10px; font-family: 'IBM Plex Mono',monospace; }
+.m-hint { font-size: 12px; color: var(--cyan); min-height: 18px; margin: 6px 0 0; font-family: 'IBM Plex Mono',monospace; }
 
 .m-row  { display: flex; gap: 10px; }
 .btn-cancel {
@@ -532,10 +532,10 @@ tbody tr.row-out  { background: rgba(255,77,106,0.04); }
 
     <div class="m-field">
       <label class="m-label">รหัสอะไหล่</label>
-      <input class="m-input" id="w-id" list="w-datalist" placeholder="พิมพ์รหัสหรือชื่อ..." oninput="onWItem()">
+      <input class="m-input" id="w-id" list="w-datalist" ...>
       <datalist id="w-datalist"></datalist>
-      <div class="m-hint" id="w-hint"></div>
     </div>
+    <div class="m-hint" id="w-hint"></div>
 
     <div class="m-field">
       <label class="m-label">จำนวนที่เบิก</label>
